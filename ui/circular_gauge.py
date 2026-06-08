@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QSlider, QVBoxLayout
-from PyQt5.QtGui import QPainter, QPen, QColor, QPolygonF, QPainterPath, QBrush, QFont
-from PyQt5.QtCore import Qt, QPointF, QRectF
+from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QSlider, QVBoxLayout
+from PySide6.QtGui import QPainter, QPen, QColor, QPolygonF, QPainterPath, QBrush, QFont
+from PySide6.QtCore import Qt, QPointF, QRectF
 from typing import Optional, Union
 import sys
 import math

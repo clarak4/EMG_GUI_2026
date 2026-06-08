@@ -1,12 +1,16 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
-from PyQt5.QtGui import QPixmap, QFont, QIcon
-from PyQt5.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
+from PySide6.QtGui import QPixmap, QFont, QIcon
+from PySide6.QtCore import Qt
 import sys
 import os
 
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    """Get absolute path to resource, works for dev and PyInstaller."""
+    if hasattr(sys, "_MEIPASS"):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
     return os.path.join(base_path, relative_path)
 
 
@@ -43,6 +47,9 @@ class EMGInstructionScreen(QWidget):
         image1 = QLabel()
         image2 = QLabel()
 
+        print("muscle_pair received:", self.muscle_pair)
+        print("type:", type(self.muscle_pair))
+        
         target, comp = self.muscle_pair  # ✅ unpack the tuple
 
         if (target, comp) == ("Infraspinatus", "Upper Trapezius"):
@@ -73,18 +80,44 @@ class EMGInstructionScreen(QWidget):
             img1_path = "assets/default1.jpg"
             img2_path = "assets/default2.jpg"
 
-        pixmap1 = QPixmap(resource_path(img1_path)).scaled(250, 250, Qt.KeepAspectRatio)
-        pixmap2 = QPixmap(resource_path(img2_path)).scaled(250, 250, Qt.KeepAspectRatio)
+        path1 = resource_path(img1_path)
+        path2 = resource_path(img2_path)
 
-        image1.setPixmap(pixmap1)
-        image2.setPixmap(pixmap2)
+        pixmap1 = QPixmap(path1)
+        pixmap2 = QPixmap(path2)
 
-        img_layout.addStretch()
+        image1.setAlignment(Qt.AlignCenter)
+        image2.setAlignment(Qt.AlignCenter)
+
+        image1.setStyleSheet("background-color: transparent;")
+        image2.setStyleSheet("background-color: transparent;")
+
+        image1.setFixedSize(300, 300)
+        image2.setFixedSize(300, 300)
+
+        image1.setScaledContents(False)
+        image2.setScaledContents(False)
+
+        image1.setPixmap(
+            pixmap1.scaled(
+                image1.size(),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+        )
+
+        image2.setPixmap(
+            pixmap2.scaled(
+                image2.size(),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+        )
+
         img_layout.addWidget(image1)
-        img_layout.addSpacing(20)
+        img_layout.addSpacing(50)
         img_layout.addWidget(image2)
-        img_layout.addStretch()
-
+        
         # --- Attach Labels ---
         label_layout = QHBoxLayout()
         label1 = QLabel("Attach Sensor 1")

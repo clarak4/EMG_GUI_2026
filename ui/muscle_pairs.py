@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout, QGridLayout, QHBoxLayout, QFrame, QSizePolicy
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QPixmap, QIcon
+from PySide6.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout, QGridLayout, QHBoxLayout, QFrame, QSizePolicy
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont, QPixmap, QIcon
 import os
 import sys
 

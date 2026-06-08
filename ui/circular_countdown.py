@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import QRectF, QTimer, Qt
-from PyQt5.QtGui import QPainter, QPen, QFont, QColor
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QRectF, QTimer, Qt
+from PySide6.QtGui import QPainter, QPen, QFont, QColor
 import math
 
 class CircularCountdown(QWidget):

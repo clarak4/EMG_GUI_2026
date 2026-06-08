@@ -1,11 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QSizePolicy
-from PyQt5.QtGui import QFont, QIcon, QPixmap, QPainter, QPen, QColor
-from PyQt5.QtCore import Qt, QTimer, QPoint
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QSizePolicy
+from PySide6.QtGui import QFont, QIcon, QPixmap, QPainter, QPen, QColor
+from PySide6.QtCore import Qt, QTimer, QPoint
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from ui.circular_gauge import CircularGauge
 from ui.data_analyzer import SessionAnalyzer
-from ui.circular_countdown import CircularCountdown
+#from ui.circular_countdown import CircularCountdown
 from pathlib import Path
 import math
 #import random #for mock EMG signals
@@ -20,14 +20,14 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-SERIAL_PORT = '/dev/tty.usbmodem3C8427C325202'
+SERIAL_PORT = '/dev/cu.usbmodem1101'
 BAUD_RATE = 115200
-PHASES = [
-    ("ECCENTRIC", 4, "#E69F00"),
-    ("HOLD", 2, "#999999"),
-    ("CONCENTRIC", 4, "#009E73"),
-    ("HOLD", 2, "#999999")
-]
+# PHASES = [
+#     ("ECCENTRIC", 4, "#E69F00"),
+#     ("HOLD", 2, "#999999"),
+#     ("CONCENTRIC", 4, "#009E73"),
+#     ("HOLD", 2, "#999999")
+# ]
 
 
 # EMG Serial Reader
@@ -80,9 +80,9 @@ class CollectDataWindow(QWidget):
 
         # Timer State Variables
         self.elapsed_seconds = 0
-        self.current_phase_index = 0
-        self.phase_remaining = PHASES[0][1]
-        self.repetitions = 0
+        #self.current_phase_index = 0
+        #self.phase_remaining = PHASES[0][1]
+        #self.repetitions = 0
         self.is_running = False
         self.mock_time = 0  # Used for generating smooth mock EMG waves
 
@@ -121,54 +121,42 @@ class CollectDataWindow(QWidget):
 
         # Info Labels (Timer, Reps)
         self.timer_label = QLabel("Timer: 00:00")
-        self.rep_label = QLabel("Repetitions: 0")
+        #self.rep_label = QLabel("Repetitions: 0")
         self.timer_label.setStyleSheet("font-size: 18px; font-weight: bold;")
-        self.rep_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        #self.rep_label.setStyleSheet("font-size: 18px; font-weight: bold;")
 
         info_layout = QVBoxLayout()
         info_layout.setAlignment(Qt.AlignCenter)
         info_layout.addWidget(self.timer_label)
-        info_layout.addWidget(self.rep_label)
+        #info_layout.addWidget(self.rep_label)
         main_layout.addLayout(info_layout)
 
-        # Phase Label & Circular Timer
-        self.phase_label = QLabel("ECCENTRIC")
-        font = QFont("Arial", 20)
-        font.setBold(True)
-        self.phase_label.setFont(font)
-        self.phase_label.setStyleSheet(f"color: {PHASES[0][2]};")
+        # # Phase Label & Circular Timer
+        # self.phase_label = QLabel("ECCENTRIC")
+        # font = QFont("Arial", 20)
+        # font.setBold(True)
+        # self.phase_label.setFont(font)
+        # self.phase_label.setStyleSheet(f"color: {PHASES[0][2]};")
 
-        self.circular_timer = CircularCountdown(duration_seconds=PHASES[0][1], color=PHASES[0][2])
+        # self.circular_timer = CircularCountdown(duration_seconds=PHASES[0][1], color=PHASES[0][2])
 
-        # Training Visualization: Ratio Gauge + Circular Countdown
+        # Training Visualization: Circular Gauge
         self.ratio_gauge = CircularGauge()
         self.ratio_gauge.setMinimumSize(220, 220)
-        self.circular_timer.setMinimumSize(220, 220)
-
-        right_col = QVBoxLayout()
-        right_col.setSpacing(10)
-        right_col.addStretch(1)
-        right_col.addWidget(self.circular_timer, alignment=Qt.AlignCenter)
-        right_col.addWidget(self.phase_label, alignment=Qt.AlignCenter)
-        right_col.addStretch(1)
-
-        right_col_wrapper = QWidget()
-        right_col_wrapper.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        right_col_wrapper.setLayout(right_col)
-        
 
         training_row = QHBoxLayout()
         training_row.setContentsMargins(0, 0, 0, 0)
-        training_row.setSpacing(60)
         training_row.setAlignment(Qt.AlignCenter)
-        training_row.addWidget(self.ratio_gauge)
-        training_row.addWidget(right_col_wrapper)
+
+        training_row.addStretch(1)
+        training_row.addWidget(self.ratio_gauge, alignment=Qt.AlignCenter)
+        training_row.addStretch(1)
 
         training_container = QWidget()
         training_container.setFixedHeight(320)
         training_container.setLayout(training_row)
-        main_layout.addWidget(training_container)
 
+        main_layout.addWidget(training_container)
 
         # Matplotlib EMG Graph Setup
         self.canvas = FigureCanvas(Figure(figsize=(5, 2)))
@@ -191,17 +179,17 @@ class CollectDataWindow(QWidget):
         # Timer Logic
         self.total_timer = QTimer()
         self.total_timer.timeout.connect(self.update_total_time)
-        self.phase_timer = QTimer()
-        self.phase_timer.timeout.connect(self.update_phase)
-        self.current_phase_index = 0
-        self.phase_remaining = PHASES[0][1]
-        self.repetitions = 0
+        # self.phase_timer = QTimer()
+        # self.phase_timer.timeout.connect(self.update_phase)
+        # self.current_phase_index = 0
+        # self.phase_remaining = PHASES[0][1]
+        # self.repetitions = 0
         self.is_running = False
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_ui)
         self.timer.start(50)
-        self.circular_timer.start()
+        # self.circular_timer.start()
         self.start_training()
 
     # Timer + Phase Logic
@@ -209,7 +197,7 @@ class CollectDataWindow(QWidget):
         if not self.is_running:
             self.is_running = True
             self.total_timer.start(1000)
-            self.phase_timer.start(1000)
+            #self.phase_timer.start(1000)
 
     def update_total_time(self):
         self.elapsed_seconds += 1
@@ -217,20 +205,20 @@ class CollectDataWindow(QWidget):
         seconds = self.elapsed_seconds % 60
         self.timer_label.setText(f"Timer: {minutes:02}:{seconds:02}")
 
-    def update_phase(self):
-        phase, duration, color = PHASES[self.current_phase_index]
-        self.phase_label.setText(phase)
-        self.phase_label.setStyleSheet(f"color: {color};")
-        self.circular_timer.start(duration=self.phase_remaining, color=color)
+    # def update_phase(self):
+    #     phase, duration, color = PHASES[self.current_phase_index]
+    #     self.phase_label.setText(phase)
+    #     self.phase_label.setStyleSheet(f"color: {color};")
+    #     self.circular_timer.start(duration=self.phase_remaining, color=color)
 
-        if self.phase_remaining == 0:
-            self.current_phase_index = (self.current_phase_index + 1) % len(PHASES)
-            self.phase_remaining = PHASES[self.current_phase_index][1]
-            if self.current_phase_index == 0:
-                self.repetitions += 1
-                self.rep_label.setText(f"Repetitions: {self.repetitions}")
-        else:
-            self.phase_remaining -= 1
+    #     if self.phase_remaining == 0:
+    #         self.current_phase_index = (self.current_phase_index + 1) % len(PHASES)
+    #         self.phase_remaining = PHASES[self.current_phase_index][1]
+    #         if self.current_phase_index == 0:
+    #             self.repetitions += 1
+    #             self.rep_label.setText(f"Repetitions: {self.repetitions}")
+    #     else:
+    #         self.phase_remaining -= 1
 
     # UI Update Loop
     def update_ui(self):
@@ -307,7 +295,7 @@ class CollectDataWindow(QWidget):
 
     def stop_training(self):
         self.total_timer.stop()
-        self.phase_timer.stop()
+        #self.phase_timer.stop()
         self.is_running = False
 
     # Stop + Save Routine

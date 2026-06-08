@@ -1,0 +1,9 @@
+PySide6
+pyserial
+numpy
+matplotlib
+scipy
+pillow
+fpdf
+python-dateutil
+packaging
