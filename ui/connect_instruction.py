@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QMessageBox, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
-from PySide6.QtGui import QFont, QIcon, QPixmap
-from PySide6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QMessageBox, QLabel, QPushButton, QVBoxLayout, QHBoxLayout
+from PyQt6.QtGui import QFont, QIcon, QPixmap
+from PyQt6.QtCore import Qt
 import sys
 import os
 
@@ -22,20 +22,20 @@ class ConnectInstructionScreen(QWidget):
         top_bar = QHBoxLayout()
 
         home_btn = QPushButton()
-        home_icon = QPixmap(resource_path("assets/home_icon.png")).scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        home_icon = QPixmap(resource_path("assets/home_icon.png")).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         home_btn.setIcon(QIcon(home_icon))
         home_btn.setIconSize(home_icon.size())
         home_btn.setFixedSize(40, 40)
         home_btn.setStyleSheet("QPushButton { background-color: transparent; border: none; } QPushButton:hover { background-color: #3a3472; }")
         home_btn.clicked.connect(self.controller.showWelcome)
 
-        top_bar.addWidget(home_btn, alignment=Qt.AlignLeft)
+        top_bar.addWidget(home_btn, alignment=Qt.AlignmentFlag.AlignLeft)
 
 
         # --- Message ---
         message = QLabel("Connect when you are ready!")
         message.setFont(QFont("Arial", 20))
-        message.setAlignment(Qt.AlignCenter)
+        message.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # --- Connect Button ---
         connect_btn = QPushButton("Connect")
@@ -66,9 +66,9 @@ class ConnectInstructionScreen(QWidget):
         forward_btn.setStyleSheet("QPushButton { background-color: transparent; font-size: 18px; color: white; border: none; } QPushButton:hover { background-color: #3a3472; }")
         forward_btn.clicked.connect(self.controller.showGraph)
 
-        bottom_bar.addWidget(back_btn, alignment=Qt.AlignLeft)
+        bottom_bar.addWidget(back_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         bottom_bar.addStretch()
-        bottom_bar.addWidget(forward_btn, alignment=Qt.AlignRight)
+        bottom_bar.addWidget(forward_btn, alignment=Qt.AlignmentFlag.AlignRight)
 
 
         # --- Layout ---
@@ -76,7 +76,7 @@ class ConnectInstructionScreen(QWidget):
         layout.addLayout(top_bar)
         layout.addStretch()
         layout.addWidget(message)
-        layout.addWidget(connect_btn, alignment=Qt.AlignCenter)
+        layout.addWidget(connect_btn, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch()
         layout.addLayout(bottom_bar)
 
@@ -86,13 +86,13 @@ class ConnectInstructionScreen(QWidget):
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle("Biofeedback Preference")
         msg_box.setText("Will you be watching the live biofeedback?")
-        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setIcon(QMessageBox.Icon.Question)
 
-        yes_button = msg_box.addButton("Yes", QMessageBox.YesRole)
-        no_button = msg_box.addButton("No", QMessageBox.NoRole)
+        yes_button = msg_box.addButton("Yes", QMessageBox.ButtonRole.YesRole)
+        no_button = msg_box.addButton("No", QMessageBox.ButtonRole.NoRole)
         msg_box.setDefaultButton(yes_button)
 
-        msg_box.exec_()
+        msg_box.exec()
 
         if msg_box.clickedButton() == yes_button:
             self.controller.biofeedback_watch_status = "Yes"

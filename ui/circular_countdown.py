@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import QRectF, QTimer, Qt
-from PySide6.QtGui import QPainter, QPen, QFont, QColor
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtCore import QRectF, QTimer, Qt
+from PyQt6.QtGui import QPainter, QPen, QFont, QColor
 import math
 
 class CircularCountdown(QWidget):
@@ -34,7 +34,7 @@ class CircularCountdown(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         rect = QRectF(self.rect().adjusted(10, 10, -10, -10))
 
@@ -50,7 +50,7 @@ class CircularCountdown(QWidget):
         painter.drawArc(rect, 90 * 16, int(-angle_span * 16))
     
         # Draw text
-        painter.setPen(Qt.white)
-        font = QFont("Arial", 28, QFont.Bold)
+        painter.setPen(Qt.GlobalColor.white)
+        font = QFont("Arial", 28, QFont.Weight.Bold)
         painter.setFont(font)
-        painter.drawText(self.rect(), Qt.AlignCenter, str(self.remaining))
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.remaining))

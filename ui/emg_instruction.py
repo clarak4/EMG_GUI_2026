@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
-from PySide6.QtGui import QPixmap, QFont, QIcon
-from PySide6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
+from PyQt6.QtGui import QPixmap, QFont, QIcon
+from PyQt6.QtCore import Qt
 import sys
 import os
 
@@ -27,19 +27,19 @@ class EMGInstructionScreen(QWidget):
         # --- Top Navigation ---
         top_bar = QHBoxLayout()
         home_btn = QPushButton()
-        home_icon = QPixmap(resource_path("assets/home_icon.png")).scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        home_icon = QPixmap(resource_path("assets/home_icon.png")).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         home_btn.setIcon(QIcon(home_icon))
         home_btn.setIconSize(home_icon.size())
         home_btn.setFixedSize(40, 40)
         home_btn.setStyleSheet("QPushButton { background-color: transparent; border: none; } QPushButton:hover { background-color: #3a3472; }")
         home_btn.clicked.connect(self.controller.showWelcome)
-        top_bar.addWidget(home_btn, alignment=Qt.AlignLeft)
+        top_bar.addWidget(home_btn, alignment=Qt.AlignmentFlag.AlignLeft)
 
 
         # --- Title ---
         title = QLabel("Wipe muscle areas identified below with alcohol before attaching sensors")
         title.setFont(QFont("Arial", 16))
-        title.setAlignment(Qt.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # --- Images and Labels ---
         img_layout = QHBoxLayout()
@@ -86,8 +86,8 @@ class EMGInstructionScreen(QWidget):
         pixmap1 = QPixmap(path1)
         pixmap2 = QPixmap(path2)
 
-        image1.setAlignment(Qt.AlignCenter)
-        image2.setAlignment(Qt.AlignCenter)
+        image1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        image2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         image1.setStyleSheet("background-color: transparent;")
         image2.setStyleSheet("background-color: transparent;")
@@ -101,16 +101,16 @@ class EMGInstructionScreen(QWidget):
         image1.setPixmap(
             pixmap1.scaled(
                 image1.size(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
             )
         )
 
         image2.setPixmap(
             pixmap2.scaled(
                 image2.size(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
             )
         )
 
@@ -122,8 +122,8 @@ class EMGInstructionScreen(QWidget):
         label_layout = QHBoxLayout()
         label1 = QLabel("Attach Sensor 1")
         label2 = QLabel("Attach Sensor 2")
-        label1.setAlignment(Qt.AlignCenter)
-        label2.setAlignment(Qt.AlignCenter)
+        label1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label2.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label1.setFont(QFont("Arial", 14))
         label2.setFont(QFont("Arial", 14))
 
@@ -148,21 +148,21 @@ class EMGInstructionScreen(QWidget):
         source_label = QLabel("Image source: Innerbody.com (muscle anatomy - musfov.html)")
         source_label.setFont(QFont("Arial", 9))
         source_label.setStyleSheet("color: #cccccc;")
-        source_label.setAlignment(Qt.AlignCenter)
+        source_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         bottom_bar = QHBoxLayout()
         
         # Add widgets in row: ←   [citation]   →
-        bottom_bar.addWidget(back_btn, alignment=Qt.AlignLeft)
+        bottom_bar.addWidget(back_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         bottom_bar.addStretch(1)
-        bottom_bar.addWidget(source_label, alignment=Qt.AlignCenter)
+        bottom_bar.addWidget(source_label, alignment=Qt.AlignmentFlag.AlignCenter)
         bottom_bar.addStretch(1)
-        bottom_bar.addWidget(forward_btn, alignment=Qt.AlignRight)
+        bottom_bar.addWidget(forward_btn, alignment=Qt.AlignmentFlag.AlignRight)
 
         # --- Main Layout ---
         main_layout = QVBoxLayout()
         main_layout.addLayout(top_bar)
-        main_layout.addWidget(title, alignment=Qt.AlignCenter)
+        main_layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
         main_layout.addSpacing(20)
         # --- Wrap image layout in a widget ---
         img_container = QWidget()
@@ -171,8 +171,8 @@ class EMGInstructionScreen(QWidget):
 
         # --- Combine images + labels into one vertical layout ---
         image_block = QVBoxLayout()
-        image_block.setAlignment(Qt.AlignCenter)
-        image_block.addWidget(img_container, alignment=Qt.AlignCenter)
+        image_block.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        image_block.addWidget(img_container, alignment=Qt.AlignmentFlag.AlignCenter)
         image_block.addSpacing(10)
         image_block.addLayout(label_layout)
 

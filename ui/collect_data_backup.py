@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton
-from PySide6.QtGui import QFont, QIcon, QPixmap
-from PySide6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt6.QtGui import QFont, QIcon, QPixmap
+from PyQt6.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import random
@@ -20,7 +20,7 @@ class CollectDataWindow(QWidget):
 
 
        home_btn = QPushButton()
-       home_icon = QPixmap("assets/home_icon.png").scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+       home_icon = QPixmap("assets/home_icon.png").scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
        home_btn.setIcon(QIcon(home_icon))
        home_btn.setIconSize(home_icon.size())
        home_btn.setFixedSize(40, 40)
@@ -28,13 +28,13 @@ class CollectDataWindow(QWidget):
        home_btn.clicked.connect(self.controller.showWelcome)
 
 
-       top_bar.addWidget(home_btn, alignment=Qt.AlignLeft)
+       top_bar.addWidget(home_btn, alignment=Qt.AlignmentFlag.AlignLeft)
 
 
        # --- Title ---
        title = QLabel("Real-time EMG Feedback")
        title.setFont(QFont("Arial", 20))
-       title.setAlignment(Qt.AlignCenter)
+       title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
 
        # --- Graph Setup ---
@@ -62,9 +62,9 @@ class CollectDataWindow(QWidget):
 
 
        bottom_bar = QHBoxLayout()
-       bottom_bar.addWidget(back_btn, alignment=Qt.AlignLeft)
+       bottom_bar.addWidget(back_btn, alignment=Qt.AlignmentFlag.AlignLeft)
        bottom_bar.addStretch()
-       bottom_bar.addWidget(forward_btn, alignment=Qt.AlignRight)
+       bottom_bar.addWidget(forward_btn, alignment=Qt.AlignmentFlag.AlignRight)
 
 
        # --- Layout ---

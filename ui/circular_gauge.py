@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QSlider, QVBoxLayout
-from PySide6.QtGui import QPainter, QPen, QColor, QPolygonF, QPainterPath, QBrush, QFont
-from PySide6.QtCore import Qt, QPointF, QRectF
+from PyQt6.QtWidgets import QWidget, QApplication, QMainWindow, QSlider, QVBoxLayout
+from PyQt6.QtGui import QPainter, QPen, QColor, QPolygonF, QPainterPath, QBrush, QFont
+from PyQt6.QtCore import Qt, QPointF, QRectF
 from typing import Optional, Union
 import sys
 import math
@@ -34,11 +34,11 @@ class CircularGauge(QWidget):
                  steps: int = 10,
                  start_angle: float = -210.0,
                  end_angle: float = 30.0,
-                 outer_circle_pen_color: Union[QColor, Qt.GlobalColor, str] = Qt.black,
+                 outer_circle_pen_color: Union[QColor, Qt.GlobalColor, str] = Qt.GlobalColor.black,
                  outer_circle_brush_color: Optional[Union[QColor, Qt.GlobalColor, str]] = None,
                  outer_circle_thickness: int = 12,
-                 inner_ring_pen_color: Union[QColor, Qt.GlobalColor, str] = Qt.black,
-                 inner_ring_brush_color: Optional[Union[QColor, Qt.GlobalColor, str]] = Qt.white,
+                 inner_ring_pen_color: Union[QColor, Qt.GlobalColor, str] = Qt.GlobalColor.black,
+                 inner_ring_brush_color: Optional[Union[QColor, Qt.GlobalColor, str]] = Qt.GlobalColor.white,
                  inner_circle_brush_color: Optional[Union[QColor, Qt.GlobalColor, str]] = None,
                  number_font_size: int = 10,
                  number_font_family: str = 'Arial',
@@ -121,7 +121,7 @@ class CircularGauge(QWidget):
         """Override the paintEvent to draw the gauge."""
         try:
             painter = QPainter(self)
-            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             rect = self.rect()
             center = rect.center()
             # radius = min(rect.width(), rect.height()) / 2 - 10
@@ -164,7 +164,7 @@ class CircularGauge(QWidget):
 
         for i in range(self.steps + 1):
             # Draw the ticks
-            pen = QPen(Qt.black, 2)  # to set the ticks color
+            pen = QPen(Qt.GlobalColor.black, 2)  # to set the ticks color
             painter.setPen(pen)
             angle = self.start_angle + i * angle_step
             rad = math.radians(angle)
@@ -186,7 +186,7 @@ class CircularGauge(QWidget):
             painter.save()
             painter.translate(text_x, text_y)
             painter.rotate(angle + 90)
-            painter.drawText(text_rect, Qt.AlignCenter, text)
+            painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)
 
             painter.restore()
 
@@ -217,7 +217,7 @@ class CircularGauge(QWidget):
         if self.outer_circle_brush_color:
             painter.setBrush(QBrush(self.outer_circle_brush_color))
         else:
-            painter.setBrush(Qt.NoBrush)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawPath(path)
 
         painter.restore()
@@ -251,7 +251,7 @@ class CircularGauge(QWidget):
         angle_step = self.angle_range / self.steps  # Degrees between ticks
 
         for i in range(self.steps + 1):
-            pen = QPen(Qt.white, 4)  # to set the ticks color and thickness
+            pen = QPen(Qt.GlobalColor.white, 4)  # to set the ticks color and thickness
             # pen = QPen(QColor(0, 150, 255), 6)  # to set the ticks color and thickness
             painter.setPen(pen)
             angle = self.start_angle + i * angle_step
@@ -290,7 +290,7 @@ class CircularGauge(QWidget):
             painter.save()
             painter.translate(text_x, text_y)
             painter.rotate(angle + 90)
-            painter.drawText(text_rect, Qt.AlignCenter, text)
+            painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)
             painter.restore()
 
         painter.restore()
@@ -312,7 +312,7 @@ class CircularGauge(QWidget):
         painter.rotate(needle_angle)
         painter.translate(2, 2)  # Offset for shadow effect
         shadow_color = QColor(0, 0, 0, 80)  # Semi-transparent black
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(shadow_color)
         painter.drawPolygon(needle)
         painter.restore()
@@ -331,7 +331,7 @@ class CircularGauge(QWidget):
         painter.save()
         painter.rotate(needle_angle)  # new
         painter.translate(2, 2)  # Offset for shadow effect
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(shadow_color)
 
         center_circle_radius_outer = 12
@@ -356,12 +356,12 @@ class CircularGauge(QWidget):
         if self.inner_ring_brush_color:
             painter.setBrush(QBrush(self.inner_ring_brush_color))
         else:
-            painter.setBrush(Qt.NoBrush)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawPath(ring_path)
 
         # Draw the inner circle (hole) with specified color
         if self.inner_circle_brush_color:
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QBrush(self.inner_circle_brush_color))
             painter.drawEllipse(QPointF(0, 0), center_circle_radius_inner, center_circle_radius_inner)
 
@@ -390,7 +390,7 @@ class Windows(QMainWindow):
         )
 
         # Create a slider to simulate voltage changes
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setMinimum(0)
         self.slider.setMaximum(30)
         self.slider.setValue(0)
@@ -415,7 +415,7 @@ def main():
     app = QApplication(sys.argv)
     window = Windows()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':

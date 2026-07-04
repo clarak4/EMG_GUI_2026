@@ -1,26 +1,33 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QSizePolicy
-from PySide6.QtGui import QFont, QIcon, QPixmap, QPainter, QPen, QColor
-from PySide6.QtCore import Qt, QTimer, QPoint
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from ui.circular_gauge import CircularGauge
-from ui.data_analyzer import SessionAnalyzer
-#from ui.circular_countdown import CircularCountdown
-from pathlib import Path
+import os
+
+os.environ.pop("QT_PLUGIN_PATH", None)
+os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
+
+import sys
 import math
-#import random #for mock EMG signals
 import serial
 import threading
 import time
-import os
-import sys
+from pathlib import Path
+
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QSizePolicy
+from PyQt6.QtGui import QFont, QIcon, QPixmap, QPainter, QPen, QColor
+from PyQt6.QtCore import Qt, QTimer, QPoint, QLibraryInfo
+
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+from ui.circular_gauge import CircularGauge
+from ui.data_analyzer import SessionAnalyzer
+# from ui.circular_countdown import CircularCountdown
+
 
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
     return os.path.join(base_path, relative_path)
 
 
-SERIAL_PORT = '/dev/cu.usbmodem1101'
+SERIAL_PORT = "/dev/cu.usbmodem3C8427C325202"
 BAUD_RATE = 115200
 # PHASES = [
 #     ("ECCENTRIC", 4, "#E69F00"),
@@ -59,6 +66,7 @@ class EMGReader:
         while self.running:
             try:
                 line = self.ser.readline().decode('utf-8').strip()
+                print("RAW SERIAL:", line)
                 if line:
                     parts = line.split()
                     for part in parts:
@@ -66,6 +74,7 @@ class EMGReader:
                             self.reading1 = int(part.split(":")[1])
                         elif part.startswith("sensor2:"):
                             self.reading2 = int(part.split(":")[1])
+                    print("Parsed:", self.reading1, self.reading2)
             except Exception as e:
                 print("Read error:", e)
 
@@ -101,7 +110,7 @@ class CollectDataWindow(QWidget):
         top_bar.setContentsMargins(0, 0, 0, 0)
 
         home_btn = QPushButton()
-        home_icon = QPixmap(resource_path("assets/home_icon.png")).scaled(24, 24, Qt.KeepAspectRatio)
+        home_icon = QPixmap(resource_path("assets/home_icon.png")).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio)
         home_btn.setIcon(QIcon(home_icon))
         home_btn.setIconSize(home_icon.size())
         home_btn.setFixedSize(40, 40)
@@ -114,9 +123,9 @@ class CollectDataWindow(QWidget):
         stop_btn.clicked.connect(self.stop_collection)
         stop_btn.clicked.connect(self.stop_training)
 
-        top_bar.addWidget(home_btn, alignment=Qt.AlignLeft)
+        top_bar.addWidget(home_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         top_bar.addStretch()
-        top_bar.addWidget(stop_btn, alignment=Qt.AlignRight)
+        top_bar.addWidget(stop_btn, alignment=Qt.AlignmentFlag.AlignRight)
         main_layout.addLayout(top_bar)
 
         # Info Labels (Timer, Reps)
@@ -126,7 +135,7 @@ class CollectDataWindow(QWidget):
         #self.rep_label.setStyleSheet("font-size: 18px; font-weight: bold;")
 
         info_layout = QVBoxLayout()
-        info_layout.setAlignment(Qt.AlignCenter)
+        info_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         info_layout.addWidget(self.timer_label)
         #info_layout.addWidget(self.rep_label)
         main_layout.addLayout(info_layout)
@@ -144,12 +153,24 @@ class CollectDataWindow(QWidget):
         self.ratio_gauge = CircularGauge()
         self.ratio_gauge.setMinimumSize(220, 220)
 
+        # Live Bar Graph Setup
+        self.bar_canvas = FigureCanvas(Figure(figsize=(3, 2)))
+        self.bar_ax = self.bar_canvas.figure.add_subplot(111)
+
+        # Match app background
+        self.bar_canvas.figure.patch.set_facecolor("#2c265e")
+        self.bar_ax.set_facecolor("#2c265e")
+
+        self.bar_canvas.setMinimumSize(300, 220)
+
         training_row = QHBoxLayout()
         training_row.setContentsMargins(0, 0, 0, 0)
-        training_row.setAlignment(Qt.AlignCenter)
+        training_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         training_row.addStretch(1)
-        training_row.addWidget(self.ratio_gauge, alignment=Qt.AlignCenter)
+        training_row.addWidget(self.ratio_gauge, alignment=Qt.AlignmentFlag.AlignCenter)
+        training_row.addSpacing(40)
+        training_row.addWidget(self.bar_canvas, alignment=Qt.AlignmentFlag.AlignCenter)
         training_row.addStretch(1)
 
         training_container = QWidget()
@@ -159,14 +180,15 @@ class CollectDataWindow(QWidget):
         main_layout.addWidget(training_container)
 
         # Matplotlib EMG Graph Setup
-        self.canvas = FigureCanvas(Figure(figsize=(5, 2)))
-        
-        # remove for cleanliness
-        self.ax = self.canvas.figure.add_subplot(111)
-        # self.ax.set_ylim(0, 1023)
+        self.canvas = FigureCanvas(Figure(figsize=(5, 3)))
 
-        self.ax.set_xlabel("Time (s)", fontsize=12, color="black", labelpad=10)
-        self.ax.set_ylabel("EMG Amplitude (mV)", fontsize=12, color="black", labelpad=10)
+        # two stacked raw graphs
+        self.ax_target = self.canvas.figure.add_subplot(211)
+        self.ax_comp = self.canvas.figure.add_subplot(212, sharex=self.ax_target)
+
+        self.ax_target.set_ylabel("Raw Target EMG\n(ADC counts)", fontsize=9, color="black")
+        self.ax_comp.set_ylabel("Raw Compensation EMG\n(ADC counts)", fontsize=9, color="black")
+        self.ax_comp.set_xlabel("Time (s)", fontsize=10, color="black")
 
         self.data_x = list(range(100))
         self.data_y1 = [0]*100
@@ -222,8 +244,22 @@ class CollectDataWindow(QWidget):
 
     # UI Update Loop
     def update_ui(self):
-        value1 = abs(self.reader.reading1)
-        value2 = abs(self.reader.reading2)
+        #value1 = abs(self.reader.reading1)
+        #value2 = abs(self.reader.reading2)
+
+        # Mock EMG data for testing raw graphs
+        self.mock_time += 0.05
+
+        value1 = int(600 + 400 * math.sin(2 * math.pi * 0.4 * self.mock_time))
+        value2 = int(1800 + 1200 * math.sin(2 * math.pi * 0.25 * self.mock_time + 1))
+
+        # keep values positive
+        value1 = max(0, value1)
+        value2 = max(0, value2)
+
+    # For Debugging
+        print("Target:", value1, "Compensation:", value2)
+        print("UI values:", value1, value2)
     
     # Uncomment below for realistic mock EMG wave signals
     # self.mock_time += 0.05  # Time step (every 50ms)
@@ -245,34 +281,80 @@ class CollectDataWindow(QWidget):
         ratio = value1 / (value1 + value2 + 1e-5)
         self.ratio_gauge.setRatio(ratio)
 
+        # Update live bar graph
+        self.bar_ax.clear()
+
+        self.bar_ax.set_facecolor("#2c265e")
+        self.bar_canvas.figure.patch.set_facecolor("#2c265e")
+
+        labels = ["Target", "Compensation"]
+        
+        total = value1 + value2 + 1e-5
+        target_ratio = value1 / total
+        comp_ratio = value2 / total
+
+        values = [target_ratio, comp_ratio]
+        colors = ["#009E73", "#E69F00"]
+
+        self.bar_ax.bar(labels, values, color=colors, edgecolor="black", linewidth=2)
+
+        #self.bar_ax.set_ylabel("Muscle\Ratio", color="white", fontsize=11)
+        self.bar_ax.tick_params(axis="x", colors="white", labelsize=12)
+        #self.bar_ax.tick_params(axis="y", colors="white", labelsize=12)
+
+        for spine in self.bar_ax.spines.values():
+            spine.set_color("white")
+
+        self.bar_ax.set_ylim(0, 1)
+        self.bar_ax.set_yticks([])
+
+        # Give extra left margin so y-axis numbers are not cut off
+        self.bar_canvas.figure.subplots_adjust(left=0.25, right=0.95, bottom=0.25, top=0.95)
+
+        self.bar_canvas.draw()
+
+
         self.data_y1 = self.data_y1[1:] + [value1]
         self.data_y2 = self.data_y2[1:] + [value2]
 
-        self.ax.clear()
-        self.ax.plot(self.data_x, self.data_y1, label="Target", color="#009E73", linewidth=2.5)
-        self.ax.plot(self.data_x, self.data_y2, label="Compensation", color="#E69F00", linewidth=2.5)
+        self.ax_target.clear()
+        self.ax_comp.clear()
 
-        # fixed limites for y-axis
-        # self.ax.set_ylim(0, 1023)
-        
-        # Y-axis bound: clamps lower bound to 0
-        ymax = max(max(self.data_y1), max(self.data_y2))
-        buffer = max(20, ymax * 0.1)
-        self.ax.set_ylim(0, ymax + buffer)
+        # main curves
+        self.ax_target.plot(self.data_x, self.data_y1, color="#009E73", linewidth=2.2)
+        self.ax_comp.plot(self.data_x, self.data_y2, color="#E69F00", linewidth=2.2)
 
+        # layered curves
+        self.ax_target.plot(self.data_x, self.data_y2, color="#F6C36A", linewidth=1.5, alpha=0.35)
+        self.ax_comp.plot(self.data_x, self.data_y1, color="#7BC8A4", linewidth=1.5, alpha=0.35)
 
-        self.ax.set_xlabel("Time (s)", fontsize=12, color="black", labelpad=10)
-        self.ax.set_ylabel("EMG Amplitude (mV)", fontsize=12, color="black", labelpad=10)
-        self.ax.tick_params(axis='x', colors='black')
-        self.ax.tick_params(axis='y', colors='black')
-        self.ax.xaxis.label.set_color('black')
-        self.ax.yaxis.label.set_color('black')
-        self.ax.legend()
-        self.canvas.draw()
-        self.canvas.figure.subplots_adjust(top=0.88, bottom=0.30)
-        self.ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
-        
-        print(f"Ratio: {ratio:.2f}")
+        # separate y-axis scaling for target
+        target_ymax = max(self.data_y1)
+        target_buffer = max(20, target_ymax * 0.1)
+        self.ax_target.set_ylim(0, target_ymax + target_buffer)
+
+        # separate y-axis scaling for compensation
+        comp_ymax = max(self.data_y2)
+        comp_buffer = max(20, comp_ymax * 0.1)
+        self.ax_comp.set_ylim(0, comp_ymax + comp_buffer)
+
+        # labels
+        self.ax_target.set_ylabel("Target\nADC counts", fontsize=9, color="black")
+        self.ax_comp.set_ylabel("Compensation\nADC counts", fontsize=9, color="black")
+        self.ax_comp.set_xlabel("Time (s)", fontsize=10, color="black")
+
+        # titles
+        self.ax_target.set_title("Target Muscle Raw EMG", fontsize=10)
+        self.ax_comp.set_title("Compensation Muscle Raw EMG", fontsize=10)
+
+        # styling
+        for ax in [self.ax_target, self.ax_comp]:
+            ax.tick_params(axis='x', colors='black', labelsize=8)
+            ax.tick_params(axis='y', colors='black', labelsize=8)
+            ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+
+        self.canvas.figure.subplots_adjust(left=0.10, right=0.98, top=0.90, bottom=0.18, hspace=0.65)
+        self.canvas.draw()     
 
 
     # Cleanup + Exit
@@ -285,10 +367,10 @@ class CollectDataWindow(QWidget):
             self,
             "Exit to Home",
             "Are you sure you want to return to the home screen?\nYour EMG session will stop.",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
         )
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             self.reader.stop()
             self.controller.showWelcome()
             self.close()
@@ -314,10 +396,10 @@ class CollectDataWindow(QWidget):
             self,
             "Save Report?",
             "Do you want to save the summary report as a PDF?",
-            QMessageBox.Yes | QMessageBox.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
 
-        if reply == QMessageBox.Yes:
+        if reply == QMessageBox.StandardButton.Yes:
             downloads_path = str(Path.home() / "Downloads")
             file_path = os.path.join(downloads_path, "session_summary.pdf")
 

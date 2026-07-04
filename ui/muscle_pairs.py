@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout, QGridLayout, QHBoxLayout, QFrame, QSizePolicy
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QPixmap, QIcon
+from PyQt6.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QVBoxLayout, QGridLayout, QHBoxLayout, QFrame, QSizePolicy
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont, QPixmap, QIcon
 import os
 import sys
 
@@ -31,7 +31,7 @@ class MusclePairScreen(QMainWindow):
             print("❗️ home_icon.png failed to load — check path:", home_icon_path)
 
         # Scale and assign
-        home_icon = home_icon_raw.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        home_icon = home_icon_raw.scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         home_btn.setIcon(QIcon(home_icon))
         home_btn.setIconSize(home_icon.size())
 
@@ -39,12 +39,12 @@ class MusclePairScreen(QMainWindow):
         home_btn.setStyleSheet("QPushButton { background-color: transparent; border: none; } QPushButton:hover { background-color: #3a3472; }")
         home_btn.clicked.connect(self.controller.showWelcome)
 
-        nav_bar.addWidget(home_btn, alignment=Qt.AlignLeft)
+        nav_bar.addWidget(home_btn, alignment=Qt.AlignmentFlag.AlignLeft)
 
         # --- Title ---
         title = QLabel("Muscle Pairs :")
         title.setFont(QFont("Arial", 24))
-        title.setAlignment(Qt.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # --- Legend ---
         legend_layout = QHBoxLayout()
@@ -75,17 +75,17 @@ class MusclePairScreen(QMainWindow):
 
         header1 = QLabel("Agonist")
         header2 = QLabel("Antagonist")
-        header1.setFont(QFont("Arial", 16, QFont.Bold))
-        header2.setFont(QFont("Arial", 16, QFont.Bold))
-        matrix_layout.addWidget(header1, 0, 0, alignment=Qt.AlignCenter)
-        matrix_layout.addWidget(header2, 0, 1, alignment=Qt.AlignCenter)
+        header1.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        header2.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        matrix_layout.addWidget(header1, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+        matrix_layout.addWidget(header2, 0, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
         for i, (agonist, antagonist) in enumerate(pairs):
             agonist_lines = "\n".join([muscle.strip() for muscle in agonist.split(';')])
             antagonist_lines = "\n".join([muscle.strip() for muscle in antagonist.split(';')])
 
             full_btn = QPushButton()
-            full_btn.setCursor(Qt.PointingHandCursor)
+            full_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             full_btn.setMinimumHeight(60)
             full_btn.setMinimumWidth(700)
             full_btn.setStyleSheet("QPushButton { background-color: transparent; border: none; } QPushButton:hover { background-color: #3a3472; }")
@@ -98,17 +98,17 @@ class MusclePairScreen(QMainWindow):
 
             agonist_label = QLabel(agonist_lines)
             agonist_label.setStyleSheet("background-color: #D8FFFD; padding: 4px; font-size: 12px; color: black; border: none;")
-            agonist_label.setAlignment(Qt.AlignCenter)
+            agonist_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             agonist_label.setWordWrap(True)
             agonist_label.setMinimumWidth(300)
-            agonist_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            agonist_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
             antagonist_label = QLabel(antagonist_lines)
             antagonist_label.setStyleSheet("background-color: #7493A9; padding: 4px; font-size: 12px; color: black; border: none;")
-            antagonist_label.setAlignment(Qt.AlignCenter)
+            antagonist_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             antagonist_label.setWordWrap(True)
             antagonist_label.setMinimumWidth(300)
-            antagonist_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            antagonist_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
             row_layout.addWidget(agonist_label)
             row_layout.addSpacing(20)
@@ -144,9 +144,9 @@ class MusclePairScreen(QMainWindow):
         back_btn.clicked.connect(self.controller.showWelcome)
 
         bottom_bar = QHBoxLayout()
-        bottom_bar.addWidget(back_btn, alignment=Qt.AlignLeft)
+        bottom_bar.addWidget(back_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         bottom_bar.addStretch()
-        bottom_bar.addWidget(forward_btn, alignment=Qt.AlignRight)
+        bottom_bar.addWidget(forward_btn, alignment=Qt.AlignmentFlag.AlignRight)
 
         layout.addStretch()
         layout.addLayout(bottom_bar)
