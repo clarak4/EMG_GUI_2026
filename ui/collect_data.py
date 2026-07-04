@@ -17,7 +17,7 @@ from PyQt6.QtCore import Qt, QTimer, QPoint, QLibraryInfo
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from ui.circular_gauge import CircularGauge
+# from ui.circular_gauge import CircularGauge
 from ui.data_analyzer import SessionAnalyzer
 # from ui.circular_countdown import CircularCountdown
 
@@ -149,9 +149,10 @@ class CollectDataWindow(QWidget):
 
         # self.circular_timer = CircularCountdown(duration_seconds=PHASES[0][1], color=PHASES[0][2])
 
+
         # Training Visualization: Circular Gauge
-        self.ratio_gauge = CircularGauge()
-        self.ratio_gauge.setMinimumSize(220, 220)
+        # self.ratio_gauge = CircularGauge()
+        # self.ratio_gauge.setMinimumSize(220, 220)
 
         # Live Bar Graph Setup
         self.bar_canvas = FigureCanvas(Figure(figsize=(3, 2)))
@@ -161,26 +162,26 @@ class CollectDataWindow(QWidget):
         self.bar_canvas.figure.patch.set_facecolor("#2c265e")
         self.bar_ax.set_facecolor("#2c265e")
 
-        self.bar_canvas.setMinimumSize(300, 220)
+        self.bar_canvas.setMinimumSize(450, 300)
 
         training_row = QHBoxLayout()
         training_row.setContentsMargins(0, 0, 0, 0)
         training_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        training_row.addStretch(1)
-        training_row.addWidget(self.ratio_gauge, alignment=Qt.AlignmentFlag.AlignCenter)
-        training_row.addSpacing(40)
+        training_row.addStretch()
+        # training_row.addWidget(self.ratio_gauge, alignment=Qt.AlignmentFlag.AlignCenter)
         training_row.addWidget(self.bar_canvas, alignment=Qt.AlignmentFlag.AlignCenter)
-        training_row.addStretch(1)
+        training_row.addStretch()
 
         training_container = QWidget()
-        training_container.setFixedHeight(320)
+        training_container.setFixedHeight(360)
         training_container.setLayout(training_row)
 
-        main_layout.addWidget(training_container)
+        main_layout.addWidget(training_container, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         # Matplotlib EMG Graph Setup
-        self.canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self.canvas = FigureCanvas(Figure(figsize=(5, 4.2)))
+        self.canvas.setMinimumHeight(270)
 
         # two stacked raw graphs
         self.ax_target = self.canvas.figure.add_subplot(211)
@@ -279,7 +280,7 @@ class CollectDataWindow(QWidget):
     # value2 = max(0, min(1023, value2))
 
         ratio = value1 / (value1 + value2 + 1e-5)
-        self.ratio_gauge.setRatio(ratio)
+        # self.ratio_gauge.setRatio(ratio)
 
         # Update live bar graph
         self.bar_ax.clear()
@@ -289,27 +290,25 @@ class CollectDataWindow(QWidget):
 
         labels = ["Target", "Compensation"]
         
-        total = value1 + value2 + 1e-5
-        target_ratio = value1 / total
-        comp_ratio = value2 / total
-
-        values = [target_ratio, comp_ratio]
+        values = [value1, value2]
         colors = ["#009E73", "#E69F00"]
 
         self.bar_ax.bar(labels, values, color=colors, edgecolor="black", linewidth=2)
-
-        #self.bar_ax.set_ylabel("Muscle\Ratio", color="white", fontsize=11)
+    
         self.bar_ax.tick_params(axis="x", colors="white", labelsize=12)
-        #self.bar_ax.tick_params(axis="y", colors="white", labelsize=12)
 
         for spine in self.bar_ax.spines.values():
             spine.set_color("white")
 
-        self.bar_ax.set_ylim(0, 1)
+        bar_ymax = max(value1, value2)
+        bar_buffer = max(20, bar_ymax * 0.1)
+        self.bar_ax.set_ylim(0, bar_ymax + bar_buffer)
+
+        self.bar_ax.set_ylabel("")
         self.bar_ax.set_yticks([])
 
         # Give extra left margin so y-axis numbers are not cut off
-        self.bar_canvas.figure.subplots_adjust(left=0.25, right=0.95, bottom=0.25, top=0.95)
+        self.bar_canvas.figure.subplots_adjust(left=0.08, right=0.95, bottom=0.25, top=0.95)
 
         self.bar_canvas.draw()
 
